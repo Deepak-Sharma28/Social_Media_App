@@ -13,7 +13,8 @@ module.exports = (Router, Isverify, collection, bcrypt, Jwt) => {
 
 
     //post request for auth user
-    Router.post('/auth', [
+
+    Router.post('/login', [
         check('email', 'email is required').isEmail(),
 
         check('password', 'password is required').exists()
@@ -56,6 +57,6 @@ module.exports = (Router, Isverify, collection, bcrypt, Jwt) => {
             console.error(err.message);
             res.status(500).send('server error');
         }
-
     });
+
 };
