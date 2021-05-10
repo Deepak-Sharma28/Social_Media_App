@@ -20,7 +20,7 @@ module.exports = (Router, collection, ProfileModel, Isverify) => {
 
 
     //for creating a user profile
-    console.log("working");
+
     Router.post('/profile', [Isverify, [check('status', 'status is required').not().isEmpty(),
         check('skills', 'skills are required').not().isEmpty()
     ]], async(req, res) => {
@@ -67,7 +67,7 @@ module.exports = (Router, collection, ProfileModel, Isverify) => {
             profileFields.skills = skills.split(',').map(skill => skill.trim());
         }
 
-        console.log(profileFields.skills);
+
 
         //build a social object
 
@@ -80,15 +80,13 @@ module.exports = (Router, collection, ProfileModel, Isverify) => {
 
         try {
             let profile = await ProfileModel.findOne({ user: req.user.id });
-            // console.log(profile);
-            // console.log(req.user.id);
+
 
             if (profile) {
                 //update
 
                 profile = await ProfileModel.findOneAndUpdate({ user: req.user.id }, { $set: profileFields }, { new: true });
-                // console.log(profile);
-                console.log("update");
+
                 return res.json(profile);
             }
             //create
@@ -96,7 +94,7 @@ module.exports = (Router, collection, ProfileModel, Isverify) => {
             profile = new ProfileModel(profileFields);
 
             await profile.save();
-            console.log("create");
+
             res.json(profile);
         } catch (err) {
             console.error(err.message);
@@ -104,5 +102,140 @@ module.exports = (Router, collection, ProfileModel, Isverify) => {
         }
     });
 
+
+
+    //Endpoint for getting all user profiles
+
+
+    Router.get('/allProfile', async(req, res) => {
+        try {
+            const Profiles = await ProfileModel.find().populate('user', ['name', 'avatar']);
+            res.json(Profiles);
+
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json("server error");
+        }
+    });
+
+
+    //Endpoint for getting user profile by Id
+
+    Router.get('/profile/:user_id', async(req, res) => {
+        try {
+            const profile = await ProfileModel.findOne({ user: req.params.user_id }).populate('user', ['name', 'avatar']);
+            if (!profile) { return res.status(400).json("profile is not found"); }
+            res.json(profile);
+        } catch (error) {
+            if (error.kind === 'ObjectId') {
+                return res.status(400).json("Profile is not found");
+            }
+            res.status(500).json("Server Error");
+        }
+    });
+
+
+    //Endpoint for deleting a user and his profile
+
+    Router.delete('/delete', Isverify, async(req, res) => {
+        try {
+            //for removing user
+
+            const a = await collection.findOneAndRemove({ _id: req.user.id });
+
+            console.log(a);
+
+            //for deleting user profile
+
+            await ProfileModel.findOneAndRemove({ user: req.user.id });
+
+            res.json({
+                msg: "user has deleted"
+            });
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json("server error");
+        }
+    });
+
+
+
+    //for updating experinece in profile
+
+
+    Router.put('/experience', [Isverify, [
+        check('title', 'title is required').not().isEmpty(),
+        check('company', 'company is required').not().isEmpty(),
+        check('from', 'from date is required').not().isEmpty()
+    ]], async(req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ msg: errors.array() });
+        }
+
+
+        const {
+            title,
+            company,
+            location,
+            from,
+            to,
+            current,
+            description
+        } = req.body;
+
+
+        const newExp = {
+            title,
+            company,
+            location,
+            from,
+            to,
+            current,
+            description
+        };
+
+
+        try {
+
+            const profile = await ProfileModel.findOne({ user: req.user.id });
+
+            profile.experience.unshift(newExp);
+
+            await profile.save();
+
+            res.json(profile);
+
+        } catch (err) {
+            console.error(err.message);
+            res.status(400).json("server error")
+        }
+
+    });
+
+    //deleting profile experience
+
+
+    Router.delete('/experinece/:exp_id', Isverify, async(req, res) => {
+        try {
+            const profile = await ProfileModel.findOne({ user: req.user.id });
+            for (let experience = 0; experience < profile.experience.length; experience++) {
+                if (profile.experience[experience]._id == req.params.exp_id) {
+                    profile.experience.splice(experience, 1);
+                    console.log(profile);
+                    break;
+                }
+            }
+
+            await profile.save();
+
+            res.json(profile);
+
+        } catch (err) {
+            console.error(err.message);
+            res.status(400).json("server error");
+        }
+
+    });
 
 };
