@@ -208,7 +208,7 @@ module.exports = (Router, collection, ProfileModel, Isverify) => {
 
         } catch (err) {
             console.error(err.message);
-            res.status(400).json("server error")
+            res.status(500).json("server error")
         }
 
     });
@@ -219,6 +219,8 @@ module.exports = (Router, collection, ProfileModel, Isverify) => {
     Router.delete('/experinece/:exp_id', Isverify, async(req, res) => {
         try {
             const profile = await ProfileModel.findOne({ user: req.user.id });
+            const Default = profile.experience.length;
+
             for (let experience = 0; experience < profile.experience.length; experience++) {
                 if (profile.experience[experience]._id == req.params.exp_id) {
                     profile.experience.splice(experience, 1);
@@ -228,12 +230,16 @@ module.exports = (Router, collection, ProfileModel, Isverify) => {
             }
 
             await profile.save();
+            //for validating the experience id
 
-            res.json(profile);
+            if (profile.experience.length < Default) {
+                return res.json(profile);
+            }
+            res.status(400).json("experience id is not valid");
 
         } catch (err) {
             console.error(err.message);
-            res.status(400).json("server error");
+            res.status(500).json("server error");
         }
 
     });
