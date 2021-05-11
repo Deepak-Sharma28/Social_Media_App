@@ -1,6 +1,6 @@
 const { check, validationResult } = require('express-validator');
 
-module.exports = (Router, collection, ProfileModel, Isverify) => {
+module.exports = (Router, collection, ProfileModel, Isverify, request) => {
     //endpoint for the current user's profile
 
     Router.get('/me', Isverify, async(req, res) => {
@@ -242,6 +242,121 @@ module.exports = (Router, collection, ProfileModel, Isverify) => {
             res.status(500).json("server error");
         }
 
+    });
+
+
+    //endpoint for updating education
+
+
+    Router.put('/education', [Isverify, [
+        check('school', 'title is required').not().isEmpty(),
+        check('degree', 'company is required').not().isEmpty(),
+        check('fieldOfStudy', 'fieldofstudy is required').not().isEmpty(),
+        check('from', 'from date is required').not().isEmpty()
+
+
+    ]], async(req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ msg: errors.array() });
+        }
+
+
+        const {
+            school,
+            degree,
+            fieldOfStudy,
+            from,
+            to,
+            current,
+            description
+        } = req.body;
+
+
+        const newEdu = {
+            school,
+            degree,
+            fieldOfStudy,
+            from,
+            to,
+            current,
+            description
+        };
+
+
+        try {
+
+            const profile = await ProfileModel.findOne({ user: req.user.id });
+
+            profile.education.unshift(newEdu);
+
+            await profile.save();
+
+            res.json(profile);
+
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json("server error");
+        }
+
+    });
+
+
+    //for deleting a user education
+
+    Router.delete('/education/:edu_id', Isverify, async(req, res) => {
+        try {
+            const profile = await ProfileModel.findOne({ user: req.user.id });
+            const Default = profile.education.length;
+
+            for (let education = 0; education < profile.education.length; education++) {
+                if (profile.education[education]._id == req.params.edu_id) {
+                    profile.education.splice(education, 1);
+                    console.log(profile);
+                    break;
+                }
+            }
+
+            await profile.save();
+            //for validating the experience id
+
+            if (profile.education.length < Default) {
+                return res.json(profile);
+            }
+            res.status(400).json("experience id is not valid");
+
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json("server error");
+        }
+
+    });
+
+    //endpoint for getting github repos by github username
+
+
+    Router.get('/github/:github_username', async(req, res) => {
+        try {
+            const options = {
+                uri: `https://api.github.com/users/${req.params.github_username}/repos?per_page=5&sort=created:asc&client_id=${process.env.ClientId}&client_secret=${process.env.ClientSecret}`,
+                method: 'GET',
+                headers: { 'user-agent': 'node.js' }
+            };
+            console.log(options.uri);
+            await request(options, (err, response, body) => {
+                if (err) console.error(err.message);
+                if (response.statusCode !== 200) {
+                    return res.status(404).json({ msg: "No github profile founded" });
+                }
+                res.json(JSON.parse(body));
+            });
+
+
+
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).json("Server Error");
+        }
     });
 
 };
