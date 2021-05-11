@@ -156,7 +156,6 @@ module.exports = (Router, collection, ProfileModel, PostModel, Isverify, check, 
         try {
             const user = await collection.findById(req.user.id).select('-password');
             const post = await PostModel.findById(req.params.post_id);
-            console.log(post);
 
             const newComment = {
                 text: req.body.text,
@@ -168,7 +167,6 @@ module.exports = (Router, collection, ProfileModel, PostModel, Isverify, check, 
 
             post.comments.unshift(newComment);
             console.log(post.comments);
-            console.log(post);
 
             await post.save();
             res.json(post.comments);

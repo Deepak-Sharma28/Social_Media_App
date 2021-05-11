@@ -23,6 +23,10 @@ const PostModel = new mongoose.Schema({
         }
     }],
     comments: [{
+        text: {
+            type: String,
+            required: true
+        },
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'users'
