@@ -7,7 +7,6 @@ const request = require('request');
 const Isverify = require('./middleware/Auth');
 const ProfileModel = require('./model/Profile');
 const PostModel = require('./model/Post');
-
 const { check, validationResult } = require('express-validator');
 
 
