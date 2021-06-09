@@ -9,7 +9,9 @@ module.exports = (Router, collection, ProfileModel, PostModel, Isverify, check, 
         if (!errors.isEmpty()) {
             res.status(400).json({ errors: errors.array() });
         }
+
         try {
+
             const user = await collection.findById(req.user.id).select('-password');
 
             const newPost = new PostModel({
