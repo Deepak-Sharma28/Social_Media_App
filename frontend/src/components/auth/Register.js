@@ -1,6 +1,13 @@
-import React,{Fragment,useState} from 'react';
+import React,{ Fragment,useState } from 'react';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { setAlert } from '../../actions/alert';
+import PropTypes from 'prop-types'
 
-export const Register = () => {
+
+const Register  = ({ setAlert }) => {
+  // console.log(setAlert);
+  
     const [formData,setFormData] = useState({
       name:'',
       email:'',
@@ -15,7 +22,7 @@ export const Register = () => {
     const onSubmit= e=>{    
       e.preventDefault();
       if(password !== password2) {
-        console.log("Your password is not matched");
+        setAlert("Your password is not matched","danger");
       }else{
         console.log(formData)
       }
@@ -34,8 +41,7 @@ export const Register = () => {
             <div className="form-group">
                 <input type="email" placeholder="Email Address" name="email" value={email} onChange={e=>onChange(e)} required />
                 <small className="form-text">This site uses Gravatar so if you want a profile image, use a
-            Gravatar email</small
-          >
+            Gravatar email</small>
         </div>
         <div className="form-group">
           <input
@@ -43,8 +49,7 @@ export const Register = () => {
             placeholder="Password"
             name="password"
             minLength="6"
-            value={password} onChange={e=>onChange(e)}
-          />
+            value={password} onChange={e=>onChange(e)}/>
         </div>
         <div className="form-group">
           <input
@@ -52,14 +57,22 @@ export const Register = () => {
             placeholder="Confirm Password"
             name="password2"
             minLength="6"
-            value={password2} onChange={e=>onChange(e)}
-          />
+            value={password2} onChange={e=>onChange(e)}/>
         </div>
         <input type="submit" className="btn btn-primary" value="Register" />
       </form>
       <p className="my-1">
-        Already have an account? <a href="login.html">Sign In</a>
+        Already have an account? <Link to="/login">Sign In</Link>
       </p>
         </Fragment>
     );
+};
+
+
+
+Register.propTypes = {
+  setAlert:PropTypes.func.isRequired
 }
+
+export default connect(null,{setAlert})(Register);
+
