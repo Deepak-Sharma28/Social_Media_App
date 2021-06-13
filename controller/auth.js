@@ -1,13 +1,16 @@
 const { check, validationResult } = require('express-validator');
 
 module.exports = (Router, Isverify, collection, bcrypt, Jwt) => {
+
     //get req for auth the user
-    Router.get('/', Isverify, async(req, res) => {
+
+    Router.get('/api/auth', Isverify, async(req, res) => {
         try {
             const user = await collection.findById(req.user.id).select('-password');
             res.json(user);
         } catch (err) {
             console.error(err.message);
+            res.status(500).send('Server Error');
         }
     });
 

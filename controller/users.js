@@ -1,5 +1,7 @@
 const { check, validationResult } = require('express-validator');
 module.exports = (Router, collection, bcrypt, gravatar, Jwt) => {
+
+
     //post endpoint for ragister a user
 
 
