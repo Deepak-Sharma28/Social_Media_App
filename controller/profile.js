@@ -6,10 +6,10 @@ module.exports = (Router, collection, ProfileModel, Isverify, request) => {
     Router.get('/me', Isverify, async(req, res) => {
         try {
             const profile = await ProfileModel.findOne({ user: req.user.id }).populate('user', ['name', 'avatar']);
-            console.log(profile);
             if (!profile) {
-                res.status(400).json({ msg: "There is no profile for this user" });
+                return res.status(400).json({ msg: "There is no profile for this user" });
             }
+            res.json(profile);
         } catch (err) {
             console.error(err.message);
             res.status(500).send("Server Error");
